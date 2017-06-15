@@ -11,15 +11,17 @@ $point['Class-Path']   = array('/src');
 
 $point['Beans'] = array(
     array(
-        Bean::CLASS_NAME => '\point\web\Dispatcher',
+        Bean::CLASS_NAME => '\point\web\Dispatcher'
     ),
     array(
         Bean::CLASS_NAME => '\point\web\Http_Request',
+        Bean::INCLUDE_PATH => __DIR__ . '/src/Http/Request.php'
     ),
     array(
         Bean::CLASS_NAME => '\point\web\Http_Response',
+        Bean::INCLUDE_PATH => __DIR__ . '/src/Http/Response.php'
     ),
     array(
-        Bean::CLASS_NAME => '\point\web\Handler_ExceptionViewer',
+        Bean::CLASS_NAME => '\point\web\Handler_ExceptionViewer'
     ),
 );

@@ -45,16 +45,36 @@ class Http_Response
     
     private $_protocol;
     
+    private $_responseRawHeader;
+
+    private $_responseRawBoby;
+
     public function __construct ()
     {
+        $this->reset();
+    }
+
+    public function reset()
+    {
+
+        unset($this->_headers);
+        $this->_headers = array();
+
+        unset($this->_protocol);
         if (isset($_SERVER['SERVER_PROTOCOL'])) {
             $this->_protocol = $_SERVER['SERVER_PROTOCOL'];
         } else {
-            $this->_protocol = 'HTTP/1.0';
+            $this->_protocol = 'HTTP/1.1';
         }
-        $this->_headers = array(
-            'HTTP' => $this->_protocol . ' 200 ' . self::HTTP_STATUS_CODE_MSG_200
-        );
+
+        unset($this->_responseRawHeader);
+        $this->_responseRawHeader = array();
+
+        unset($this->_responseRawBoby);
+        $this->_responseRawBoby = null;
+
+        // default header
+        $this->addHeader($this->_protocol . ' 200 ' . self::HTTP_STATUS_CODE_MSG_200);
     }
 
     /**
@@ -64,14 +84,21 @@ class Http_Response
      */
     public function redirect($url)
     {
-        header('HTTP/1.1 301 Moved Permanently');
-        header('Location: ' . $url);
-        exit();
+        $this->addHeader($this->_protocol . ' 301 Moved Permanently');
+        $this->addHeader('Location', $url);
+        $this->sendHeaders();
+        if (!$this->isCliMode()) {
+            exit();
+        }
     }
     
-    public function addHeader($name, $value)
+    public function addHeader($name, $value = null)
     {
-        $this->_headers[$name] = $name . ': ' . $value;
+        if (is_null($value)) {
+            $this->_headers['HTTP'] = $name;
+        } else {
+            $this->_headers[$name] = $name . ': ' . $value;
+        }
     }
     
     public function output($data = null)
@@ -82,14 +109,31 @@ class Http_Response
         }
     }
     
+    public function getResponseRawBoby()
+    {
+        return $this->_responseRawBody;
+    }
+
+    public function setResponseRawBoby(&$raw)
+    {
+        $this->_responseRawBody = $raw;
+    }
+
+    public function getHeaders()
+    {
+        return $this->_headers;
+    }
+
     public function sendHeaders()
     {
-        foreach ($this->_headers as &$header) {
-            header($header);
+        if (!$this->isCliMode()) {
+            foreach ($this->_headers as &$header) {
+                header($header);
+            }
+            $this->_headers = array();
         }
-        $this->_headers = array();
     }
-    
+ 
     public function setStatusCode($statusCode)
     {
         if (isset($this->_headers['HTTP'])) {
@@ -101,4 +145,10 @@ class Http_Response
             );
         }
     }
+
+    public function isCliMode()
+    {
+        return php_sapi_name() === 'cli';
+    }
+
 }

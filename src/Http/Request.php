@@ -30,9 +30,21 @@ class Http_Request
      */
     private $_httpMethod = 'GET';
     
-    public function __construct(array $params=null, array $headers=null, $uri=null, $httpMethod=null)
-    {
+    public function __construct(
+        array $params = null,
+        array $headers = null,
+        $uri = null,
+        $httpMethod = null
+    ) {
+        $this->reset($params, $headers, $uri, $httpMethod);
+    }
 
+    public function reset(
+        array $params = null,
+        array $headers = null,
+        $uri = null,
+        $httpMethod = null
+    ) {
         if (!is_null($params)) {
             $this->_params = $params;
         } else if (count($_REQUEST) > 0) {
@@ -108,9 +120,10 @@ class Http_Request
 
     public function getProtocol()
     {
+        $serverParams = $this->getServerParams();
         foreach (array('HTTP_X_FORWARDED_PROTO', 'SERVER_PROTOCOL') as $header) {
-           if (isset($_SERVER[$header])) {
-               return strpos($_SERVER[$header], 'HTTPS') === 0 ? 'https' : 'http';
+           if (isset($serverParams[$header])) {
+               return strpos($serverParams[$header], 'HTTPS') === 0 ? 'https' : 'http';
            }
         }
         return 'http';
@@ -135,6 +148,7 @@ class Http_Request
             $contentTypeParams = explode(';', $this->_headers['Content-Type']);
             // parse
             switch ($contentTypeParams[0]) {
+                case 'text/json':
                 case 'application/json':
                 case 'application/xjson':
                     return json_decode($this->getRawBody(), true);

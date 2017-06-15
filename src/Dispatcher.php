@@ -5,6 +5,9 @@ use \point\core\Bean;
 
 class Dispatcher
 {
+
+    const DEFAULT_CONTROLLER = 'Default';
+
     /**
      * @Autowired
      * @var \point\core\Context
@@ -43,9 +46,10 @@ class Dispatcher
      * @var boolean
      */
     private $_isRender = true;
-    
-    const DEFAULT_CONTROLLER = 'Default';
-    
+
+    /**
+     * Run MVC flow
+     */ 
     public function direct(Http_Request &$request, Http_Response &$response, $uri)
     {
         //TODO redirect / forward

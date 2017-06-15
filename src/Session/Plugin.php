@@ -49,9 +49,9 @@ class Session_Plugin implements Session_Interface
         }
 
         if (is_null($options)) {
-            session_start();
+            @session_start();
         } else {
-            session_start($this->_options);
+            @session_start($this->_options);
         }
 
     }

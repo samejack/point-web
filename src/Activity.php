@@ -15,7 +15,6 @@ class Activity
     
     public function start()
     {
-
         $eventHandleManager = $this->_context->getBeanByClassName('\point\core\EventHandleManager');
         $eventHandleManager->addExceptionHandler(
             $this->_context->getBeanByClassName('\point\web\Handler_ExceptionViewer')
