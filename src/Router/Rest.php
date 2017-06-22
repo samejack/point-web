@@ -25,11 +25,11 @@ class Router_Rest implements Router_Interface
 
     public function route(&$controller, Http_Request &$request, $uri)
     {
-        // TODO 重複 new
-        $reflection = new \ReflectionClass($controller);
+
+        $reflection = $this->_context->getReflectionClass(get_class($controller));
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
-        $this->_context->log('Scan controller : ' . $reflection->getName());
+        $this->_context->log('Scan controller: ' . $reflection->getName());
 
         foreach ($methods as &$method) {
             if (preg_match('/^.+Action$/', $method->getName())) {
@@ -37,8 +37,9 @@ class Router_Rest implements Router_Interface
                 $doc = $method->getDocComment();
                 if ($doc !== false) {
                     // mapping http method
-                    if (preg_match('/@METHOD\(([A-Z]+)\)/', $doc, $matches) > 0
-                        && strtoupper($matches[1]) === $request->getHttpMethod()
+                    if ((preg_match('/@METHOD\(\*\)/', $doc, $matches) > 0)
+                        || (preg_match('/@METHOD\(([A-Z]+)\)/', $doc, $matches) > 0
+                            && strtoupper($matches[1]) === $request->getHttpMethod())
                     ) {
                         // mapping url
                         if (strlen($uri) === 0) {
