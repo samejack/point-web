@@ -29,7 +29,13 @@ class Http_Request
      * @var string
      */
     private $_httpMethod = 'GET';
-    
+
+    /**
+     * Http request RAW message body
+     * @var string
+     */
+    private $_rawBody = null;
+
     public function __construct(
         array $params = null,
         array $headers = null,
@@ -137,7 +143,10 @@ class Http_Request
 
     public function getRawBody ()
     {
-        return @file_get_contents('php://input');
+        if (is_null($this->_rawBody)) {
+            $this->_rawBody = @file_get_contents('php://input');
+        }
+        return $this->_rawBody;
     }
     
     private function _makeModel ()
