@@ -7,7 +7,7 @@ class Http_Request
      * parameters of http request
      * @var array
      */
-    private $_params = array();
+    private $_params = null;
     /**
      * auto marshal model 
      * @var array
@@ -35,6 +35,12 @@ class Http_Request
      * @var string
      */
     private $_rawBody = null;
+
+    /**
+     * Remote IP Address
+     * @var string
+     */
+    private $_ipAddress = null;
 
     public function __construct(
         array $params = null,
@@ -74,6 +80,9 @@ class Http_Request
         } else  if (is_string($httpMethod)) {
             $this->setHttpMethod($httpMethod);
         }
+
+        $this->_params = array();
+        $this->_ipAddress = null;
     }
 
     public function getHttpMethod()
@@ -86,7 +95,7 @@ class Http_Request
         $this->_httpMethod = strtoupper($method);
     }
 
-    public function getHeader($key=null)
+    public function getHeader($key = null)
     {
         if (is_null($key)) {
             return $this->_headers;
@@ -122,6 +131,26 @@ class Http_Request
     public function getUri()
     {
         return $this->_uri;
+    }
+
+    public function getIpAddress()
+    {
+        if (is_null($this->_ipAddress)) {
+            $serverParams = $this->getServerParams();
+            $conditionHeaders = array(
+                'HTTP_X_FORWARDED_FOR',
+                'HTTP_X_CLIENT_IP',
+                'HTTP_X_CLUSTER_CLIENT_IP',
+                'HTTP_CLIENT_IP',
+                'REMOTE_ADDR'
+            );
+            foreach ($conditionHeaders as &$header) {
+                if (isset($serverParams[$header])) {
+                    $this->_ipAddress = $serverParams[$header];
+                }
+            }
+        }
+        return $this->_ipAddress;
     }
 
     public function getProtocol()
