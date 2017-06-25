@@ -47,7 +47,7 @@ class Http_Response
     
     private $_responseRawHeader;
 
-    private $_responseRawBoby;
+    private $_responseRawBody;
 
     public function __construct ()
     {
@@ -70,8 +70,8 @@ class Http_Response
         unset($this->_responseRawHeader);
         $this->_responseRawHeader = array();
 
-        unset($this->_responseRawBoby);
-        $this->_responseRawBoby = null;
+        unset($this->_responseRawBody);
+        $this->_responseRawBody = null;
 
         // default header
         $this->addHeader($this->_protocol . ' 200 ' . self::HTTP_STATUS_CODE_MSG_200);
@@ -136,14 +136,23 @@ class Http_Response
  
     public function setStatusCode($statusCode)
     {
-        if (isset($this->_headers['HTTP'])) {
-            $this->_headers['HTTP'] = sprintf(
-                '%s %d %s',
-                $this->_protocol,
-                $statusCode,
-                constant('self::HTTP_STATUS_CODE_MSG_' . $statusCode)
-            );
+        if (defined('self::HTTP_STATUS_CODE_MSG_' . $statusCode)) {
+            $message = constant('self::HTTP_STATUS_CODE_MSG_' . $statusCode);
+        } else if ($statusCode < 200) {
+            $message = 'Informational responses';
+        } else if ($statusCode < 300) {
+            $message = 'Success';
+        } else if ($statusCode < 400) {
+            $message = 'Redirection';
+        } else {
+            $message = 'Server error';
         }
+        $this->_headers['HTTP'] = sprintf(
+            '%s %d %s',
+            $this->_protocol,
+            $statusCode,
+            $message
+        );
     }
 
     public function isCliMode()
