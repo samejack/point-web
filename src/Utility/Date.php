@@ -6,20 +6,32 @@ namespace point\web;
  * 日期相關常用副程式
  *
  * @author sj
- * @copyright Copyright 2012 toRight.com
  */
 class Utility_Date
 {
-    const DEFAULT_TIMEZONE = 'UTC';
+
+    /**
+     * @Autowired
+     * @var \point\web\Config_Interface
+     */
+    private $_config;
+
+    public function getDefaultTimeZone()
+    {
+        if (isset($this->_config['system']['timezone'])) {
+            return $this->_config['system']['timezone'];
+        }
+        return date_default_timezone_get();
+    }
 
     /**
      * 取得 UTC 日期文字
      *
      * @return string
      */
-    public static function getUtcTimezoneDatetime()
+    public function getUtcTimezoneDateTime()
     {
-        return self::getTimezoneDatetime('UTC');
+        return $this->getTimezoneDatetime('UTC');
     }
     /**
      * 取得時間
@@ -30,16 +42,19 @@ class Utility_Date
      *  Format = 'Y-m-d H:i:s'
      * @return string 時間字串
      */
-    public static function getTimezoneDatetime($timezone = Utility_Date::DEFAULT_TIMEZONE, $date=null)
+    public function getTimezoneDateTime($timezone = null, $date = null)
     {
+        if (is_null($timezone)) {
+            $timezone = $this->getDefaultTimeZone();
+        }
         if (is_null($date)) {
             $date = date('Y-m-d H:i:s');
         }
-        if ($timezone === Utility_Date::DEFAULT_TIMEZONE) {
+        if ($timezone === date_default_timezone_get()) {
             return $date;
         } else {
             // need to convert time zone
-            return self::convertTimezone($date, Utility_Date::DEFAULT_TIMEZONE, $timezone);
+            return self::convertTimezone($date, date_default_timezone_get(), $timezone);
         }
     }
     /**
@@ -50,7 +65,7 @@ class Utility_Date
      *   true:合法<br />
      *   false:不合法
      */
-    public static function checkTimezoneCode($timezoneCode)
+    public function checkTimezoneCode($timezoneCode)
     {
         foreach (timezone_identifiers_list() as $timezone) {
             if (Utility_String::compare($timezoneCode, $timezone)) {
@@ -68,23 +83,26 @@ class Utility_Date
      * @return string 轉換的日期文字
      * @throws \Exception
      */
-    public static function convertTimezone($strDatetime, $inputTimezone, $outputTimezone)
+    public function convertTimezone($strDatetime, $inputTimezone, $outputTimezone)
     {
-        if (!self::checkTimezoneCode($inputTimezone)) {
+        if (!$this->checkTimezoneCode($inputTimezone)) {
             throw new \Exception('Timezone code is invalidate : '.$inputTimezone);
         }
-        if (!self::checkTimezoneCode($outputTimezone)) {
+        if (!$this->checkTimezoneCode($outputTimezone)) {
             throw new \Exception('Timezone code is invalidate : '.$outputTimezone);
         }
-    
-        $date = new Zend_Date();
-        $defaultTimeZoneStore = date_default_timezone_get();
-        date_default_timezone_set($inputTimezone);
-        $date->setTimestamp(strtotime($strDatetime));
-        $date->setTimezone($outputTimezone);
-        date_default_timezone_set($defaultTimeZoneStore);
+        if ($inputTimezone === $outputTimezone) {
+            return $strDatetime;
+        }
 
-        return str_replace('T', ' ', substr($date->get(Zend_Date::W3C), 0, 19));
+        $storeTimeZoneStore = date_default_timezone_get();
+        date_default_timezone_set($inputTimezone);
+        $timestamp = strtotime($strDatetime) - date('Z');
+        date_default_timezone_set($outputTimezone);
+        $convertedDate = date('Y-m-d H:i:s', $timestamp);
+        date_default_timezone_set($storeTimeZoneStore);
+
+        return $convertedDate;
     }
     /**
      * 比較傳入的時間差
@@ -93,7 +111,7 @@ class Utility_Date
      * @param string $strDateSecond 要比較的時間之二
      * @return int 秒數差
      */
-    public static function compare($strDateFirst, $strDateSecond)
+    public function compare($strDateFirst, $strDateSecond)
     {
         return (strtotime($strDateSecond) - strtotime($strDateFirst));
     }
