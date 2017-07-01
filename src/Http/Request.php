@@ -57,10 +57,12 @@ class Http_Request
         $uri = null,
         $httpMethod = null
     ) {
-        if (!is_null($params)) {
+        if (!is_null($params) && is_array($params)) {
             $this->_params = $params;
-        } else if (count($_REQUEST) > 0) {
+        } else if (isset($_REQUEST) && count($_REQUEST) > 0) {
             $this->_params = $_REQUEST;
+        } else {
+            $this->_params = array();
         }
 
         if (is_null($headers) && function_exists('getallheaders')) {
@@ -75,13 +77,12 @@ class Http_Request
             $this->setUri($uri);
         }
 
-        if (is_null($httpMethod) && isset($_SERVER['REDIRECT_URL'])) {
+        if (is_null($httpMethod) && isset($_SERVER['REQUEST_METHOD'])) {
             $this->setHttpMethod($_SERVER['REQUEST_METHOD']);
         } else  if (is_string($httpMethod)) {
             $this->setHttpMethod($httpMethod);
         }
 
-        $this->_params = array();
         $this->_ipAddress = null;
     }
 
@@ -110,11 +111,8 @@ class Http_Request
         $this->_params[$key] = $value;
     }
     
-    public function getParam($key=null)
+    public function getParam($key = null)
     {
-        if (is_null($this->_params)) {
-            $this->_params = $this->_makeParams();
-        }
         if (is_null($key)) {
             return $this->_params;
         } else if (isset($this->_params[$key])) {
