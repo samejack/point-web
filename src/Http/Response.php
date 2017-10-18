@@ -81,10 +81,11 @@ class Http_Response
      * HTTP 301 Moved Permanently
      *
      * @param string $url Redirect URL
+     * @param integer $mode 301 | 302
      */
-    public function redirect($url)
+    public function redirect($url, $mode = 302)
     {
-        $this->addHeader($this->_protocol . ' 301 Moved Permanently');
+        $this->setStatusCode($mode);
         $this->addHeader('Location', $url);
         $this->sendHeaders();
         if (!$this->isCliMode()) {
