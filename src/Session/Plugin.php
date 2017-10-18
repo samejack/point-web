@@ -91,10 +91,9 @@ class Session_Plugin implements Session_Interface
         }
     }
     
-    public function setValue($key, $value, $pluginId=null)
+    public function setValue($key, $value, $pluginId = null)
     {
-        if (session_status() === PHP_SESSION_NONE  )  $this->start();
-
+        if (session_status() === PHP_SESSION_NONE) $this->start();
         if (is_null($pluginId)) {
             $pluginId = $this->_runtime->getCurrentPluginId();
         }
@@ -103,7 +102,7 @@ class Session_Plugin implements Session_Interface
 
     public function getValue($key, $pluginId=null)
     {
-        if (session_status() === PHP_SESSION_NONE  )  $this->start();
+        if (session_status() === PHP_SESSION_NONE)  $this->start();
         if (is_null($pluginId)) {
             $pluginId = $this->_runtime->getCurrentPluginId();
         }
