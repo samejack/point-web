@@ -6,7 +6,6 @@ namespace point\web;
  * 字串相關常用副程式
  *
  * @author sj
- * @copyright Copyright 2012 toRight.com
  */
 class Utility_String
 {
@@ -69,5 +68,23 @@ class Utility_String
             $password .= substr($strs, mt_rand(1, strlen($strs)), 1);
         }
         return str_shuffle($password);
+    }
+
+    /**
+     * Random generate string
+     *
+     * @param integer $length
+     * @return string
+     */
+    public static function generateURLSafeRand($length = 20)
+    {
+        // make directory
+        $book = 'abcdefghkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ012345679_-';
+        $bookLen = strlen($book);
+        $string = '';
+        while (strlen($string) < $length) {
+            $string .= substr($book, mt_rand(1, $bookLen), 1);
+        }
+        return str_shuffle($string);
     }
 }
