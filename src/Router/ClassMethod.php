@@ -10,7 +10,13 @@ class Router_ClassMethod implements Router_Interface
      * @var array
      */
     private $_restParameters = array();
-    
+
+    /**
+     * @Autowired
+     * @var \point\core\Context
+     */
+    private $_context;
+
     public function route(&$controller, Http_Request &$request, $uri)
     {
         $subUrls = explode('/', $uri);
@@ -35,8 +41,8 @@ class Router_ClassMethod implements Router_Interface
         } else {
             $this->_invokeMethodName = 'indexAction';
         }
-        // TODO 重複 new
-        $reflection = new \ReflectionClass($controller);
+
+        $reflection = $this->_context->getReflectionClass(get_class($controller));
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as &$method) {
@@ -60,9 +66,11 @@ class Router_ClassMethod implements Router_Interface
         // make invoke agrs
         $args = array();
         foreach ($this->_reflectionMethod->getParameters() as $parameter){
-            if (strtolower($parameter->getName()) === 'request') {
+            if ($parameter->getClass() instanceof \ReflectionClass
+                && $parameter->getClass()->getName() === get_class($request)) {
                 $args[] = $request;
-            } else if (strtolower($parameter->getName()) === 'response') {
+            } else if ($parameter->getClass() instanceof \ReflectionClass
+                && $parameter->getClass()->getName() === get_class($response)) {
                 $args[] = $response;
             }
         }

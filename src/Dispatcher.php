@@ -94,7 +94,7 @@ class Dispatcher
 
                 $fixPattern = sprintf('/^%s([^\/]*).*/', preg_quote($pattern, '/'));
 
-                if (preg_match($fixPattern, $uri, $matcheUri) === 0) {
+                if (preg_match($fixPattern, $uri, $matchUri) === 0) {
                     continue;
                 } else {
                     $config = $this->_runtime->getPluginConfig($controllerPluginId);
@@ -105,15 +105,15 @@ class Dispatcher
                         $fixUri = self::DEFAULT_CONTROLLER;
                     }
                     if (preg_match('/^([^\/]+)(.*)/', $fixUri, $matches) === 0) {
-                        $matches[1] = $matcheUri[1];
+                        $matches[1] = $matchUri[1];
                         $matches[2] = '';
                     }
 
                     // Normalization, convet '-' char to file format
-                    $controllerClassname = ucwords(str_replace('-', ' ', strtolower($matches[1])));
-                    $controllerClassname = str_replace(' ', '', $controllerClassname);
+                    $controllerClassName = ucwords(str_replace('-', ' ', strtolower($matches[1])));
+                    $controllerClassName = str_replace(' ', '', $controllerClassName);
 
-                    $filename = $config['Path'] . $routeConfig['Path'] . '/' . $controllerClassname . '.php';
+                    $filename = $config['Path'] . $routeConfig['Path'] . '/' . $controllerClassName . '.php';
 
                     // find controller php file
                     if (is_file($filename)) {
@@ -123,15 +123,14 @@ class Dispatcher
                             $request,
                             $matches[2],
                             $routeConfig,
-                            $controllerClassname
+                            $controllerClassName
                         );
-
                         return true;
                     }
                     
                     // If $pattern euqal '/' and try to match default controller
                     if ($pattern === '/') {
-                        $controllerClassname = self::DEFAULT_CONTROLLER;
+                        $controllerClassName = self::DEFAULT_CONTROLLER;
                         $filename = $config['Path'] . $routeConfig['Path'] . '/' . self::DEFAULT_CONTROLLER . '.php';
                         if (is_file($filename)) {
                             $this->_prepareController (
@@ -140,7 +139,7 @@ class Dispatcher
                                 $request,
                                 $fixUri,
                                 $routeConfig,
-                                $controllerClassname
+                                $controllerClassName
                             );
                             return true;
                         }
@@ -208,10 +207,10 @@ class Dispatcher
      * @param Http_Request $request
      * @param string $uri
      * @param array $routeConfig
-     * @param string $controllerClassname
+     * @param string $controllerClassName
      * @throws \Exception
      */
-    private function _prepareController (&$filename, &$pluginId, Http_Request &$request, &$uri, array &$routeConfig, &$controllerClassname)
+    private function _prepareController (&$filename, &$pluginId, Http_Request &$request, &$uri, array &$routeConfig, &$controllerClassName)
     {
         //start plugin
         $this->_runtime->start($pluginId);
@@ -222,7 +221,7 @@ class Dispatcher
         $this->_runtime->restoreCurrentPluginId();
         
         // append config to ApplicationContext
-        $className = str_replace('.', '\\', $pluginId) . '\\' . $routeConfig['Prefix'] . $controllerClassname;
+        $className = str_replace('.', '\\', $pluginId) . '\\' . $routeConfig['Prefix'] . $controllerClassName;
         $beans = array(
             array(
                 Bean::CLASS_NAME => $className,
@@ -238,7 +237,7 @@ class Dispatcher
         $this->_runtime->restoreCurrentPluginId();
         
         // find route from annotation
-        $reflection = new \ReflectionClass($this->_controller);
+        $reflection = $this->_context->getReflectionClass($className);
         $doc = $reflection->getDocComment();
         if ($doc !== false && preg_match('/@Controller\(([a-zA-Z_]+)\)/', $doc, $routes) > 0) {
             $routeClassName = str_replace('.', '\\', $this->_runtime->getCurrentPluginId()) . '\\' . 'Router_'.$routes[1];

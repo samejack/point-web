@@ -77,12 +77,15 @@ class Router_Rest implements Router_Interface
     public function invoke(&$controller, Http_Request &$request, Http_Response &$response)
     {
         $this->_context->log('Invoke controller');
+
         // make invoke agrs
         $args = array();
         foreach ($this->_reflectionMethod->getParameters() as $parameter){
-            if (strtolower($parameter->getName()) === 'request') {
+            if ($parameter->getClass() instanceof \ReflectionClass
+                && $parameter->getClass()->getName() === get_class($request)) {
                 $args[] = $request;
-            } else if (strtolower($parameter->getName()) === 'response') {
+            } else if ($parameter->getClass() instanceof \ReflectionClass
+                && $parameter->getClass()->getName() === get_class($response)) {
                 $args[] = $response;
             } else if (array_key_exists($parameter->getName(), $this->_restParameters)) {
                 $args[] = $this->_restParameters[$parameter->getName()];
