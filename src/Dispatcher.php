@@ -50,11 +50,29 @@ class Dispatcher
     /**
      * Run MVC flow
      */ 
-    public function direct(Http_Request &$request, Http_Response &$response, $uri)
+    public function direct(Http_Request &$request, Http_Response &$response, $uri = null)
     {
+
         //TODO redirect / forward
-        $this->_context->log('Direct to : ' . $uri);
         $this->_runtime->setCurrentPluginId(str_replace('\\', '.', __NAMESPACE__));
+
+        // Middleware
+        $middlewareExtensions = $this->_runtime->getExtension('Middleware');
+        if (is_array($middlewareExtensions)) {
+            foreach ($widdlewareExtensions as $pluginId => &$middlewares) {
+                foreach ($middlewares as &$middlewareClassName) {
+                    $middleware = $this->_context->getBeanByClassName($middlewareClassName);
+                    if (!is_null($middleware) && is_callable(array($middleware, 'aspect'))) {
+                        $middleware->aspect($request, $response);
+                    }
+                }
+            }
+        }
+
+        if (is_null($uri)) {
+            $uri = $request->getUri();
+        }
+        $this->_context->log('Direct to : ' . $uri);
 
         $this->route($request, $uri);
 

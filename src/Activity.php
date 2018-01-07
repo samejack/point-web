@@ -42,7 +42,7 @@ class Activity
         }
 
         // dispatch
-        $this->_context->getBeanByClassName('\point\web\Dispatcher')->direct($request, $response, $request->getUri());
+        $this->_context->getBeanByClassName('\point\web\Dispatcher')->direct($request, $response);
     }
     
     public function stop()
