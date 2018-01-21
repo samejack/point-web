@@ -12,7 +12,7 @@ class Validate_Validator
     private $_messages = array();
 
     /**
-     * Check colums by rules
+     * Check columns by rules
      *
      * @see Rule
      * @param array   $columns
@@ -47,6 +47,16 @@ class Validate_Validator
      */
     private function _runRules (array &$columns, $id, array &$rules, $ruleBreak=true)
     {
+        // optional
+        foreach ($rules as &$rule) {
+            if ($rule instanceof Validate_Rule_Optional) {
+                // 如果非必填的話，沒有傳入值不需要驗證
+                if (!isset($columns[$id]) || empty($columns[$id])) {
+                    return true;
+                }
+            }
+        }
+
         $result = true;
         foreach ($rules as &$rule) {
             //check rule exist
@@ -77,11 +87,29 @@ class Validate_Validator
         if (isset($columns[$id])) {
             $columnValue = $columns[$id];
         }
-        $result = $rule->validate($columnValue, $columns);
+        $result = $this->_nestValidate($rule, $columnValue, $columns);
         if (!$result) {
-            $this->_messages[] = array('id' => $id , 'rule' => $rule , 'message' => $rule->getMessage());
+            $this->_messages[] = array(
+                'id' => $id ,
+                'rule' => $rule ,
+                'message' => $rule->getMessage()
+            );
         }
         return $result;
+    }
+
+    private function _nestValidate(&$rule, &$columnValue, &$columns)
+    {
+        if (is_array($columnValue)) {
+            $result = true;
+            foreach ($columnValue as &$value) {
+                $result &= $this->_nestValidate($rule, $value, $columns);
+                if (!$result)  return false;
+            }
+            return true;
+        } else {
+            return $rule->validate($columnValue, $columns);
+        }
     }
 
     private function _convertValue (array $args, array $columns)
