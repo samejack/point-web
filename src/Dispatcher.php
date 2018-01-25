@@ -268,7 +268,7 @@ class Dispatcher
         
         // route action
         if (!$this->_router->route($this->_controller, $request, $uri)) {
-            throw new Http_Exception('Route fail, action not found. (Controller=' . get_class($this->_controller) . ')', 404);
+            throw new Http_Exception('Route Fail: ' . $uri . ', Action Not Found: (Controller=' . get_class($this->_controller) . ')', 404);
         }
     }
     
