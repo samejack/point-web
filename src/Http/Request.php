@@ -164,7 +164,11 @@ class Http_Request
 
     public function setUri($uri)
     {
-        // TODO: fix URI
+        $queryString = parse_url($uri, PHP_URL_QUERY);
+        if (!is_null($queryString)) {
+            parse_str($queryString, $this->_params);
+            $uri = parse_url($uri, PHP_URL_PATH);
+        }
         $this->_uri = $uri;
     }
 
