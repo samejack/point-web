@@ -7,6 +7,7 @@ class Dispatcher
 {
 
     const DEFAULT_CONTROLLER = 'Default';
+    const DEFAULT_ERROR_CONTROLLER = 'Error';
 
     /**
      * @Autowired
@@ -48,6 +49,12 @@ class Dispatcher
     private $_isRender = true;
 
     /**
+     * Framework Handler
+     * @var array
+     */
+    private $_exceptionHandler = array();
+
+    /**
      * Run MVC flow
      */ 
     public function direct(Http_Request &$request, Http_Response &$response, $uri = null)
@@ -59,9 +66,17 @@ class Dispatcher
         // Middleware
         $middlewareExtensions = $this->_runtime->getExtension('Middleware');
         if (is_array($middlewareExtensions)) {
-            foreach ($widdlewareExtensions as $pluginId => &$middlewares) {
+            foreach ($middlewareExtensions as $pluginId => &$middlewares) {
                 foreach ($middlewares as &$middlewareClassName) {
+                    $beans = array(
+                        array(
+                            Bean::CLASS_NAME => $middlewareClassName,
+                        ),
+                    );
+                    $this->_runtime->setCurrentPluginId($pluginId);
+                    $this->_context->addConfiguration($beans);
                     $middleware = $this->_context->getBeanByClassName($middlewareClassName);
+                    $this->_runtime->restoreCurrentPluginId();
                     if (!is_null($middleware) && is_callable(array($middleware, 'aspect'))) {
                         $middleware->aspect($request, $response);
                     }
@@ -96,7 +111,7 @@ class Dispatcher
     }
 
     /**
-     * Route HTTP request
+     * Find controller by URI
      *
      * @param Http_Request $request
      * @param string $uri
@@ -105,9 +120,9 @@ class Dispatcher
      */
     public function route(Http_Request &$request, $uri)
     {
+        $actionFound = false;
         $controllerExtensions = $this->_runtime->getExtension('ControllerPath');
         foreach ($controllerExtensions as $controllerPluginId => &$eachControllerList) {
-
             foreach ($eachControllerList as $pattern => &$routeConfig) {
 
                 $fixPattern = sprintf('/^%s([^\/]*).*/', preg_quote($pattern, '/'));
@@ -119,7 +134,7 @@ class Dispatcher
                     $fixUri = substr($uri, strlen($pattern));
 
                     // fix route default
-                    if (strlen($fixUri) === 0|| $fixUri === '/') {
+                    if (strlen($fixUri) === 0 || $fixUri === '/') {
                         $fixUri = self::DEFAULT_CONTROLLER;
                     }
                     if (preg_match('/^([^\/]+)(.*)/', $fixUri, $matches) === 0) {
@@ -135,7 +150,7 @@ class Dispatcher
 
                     // find controller php file
                     if (is_file($filename)) {
-                        $this->_prepareController (
+                        $actionFound = $this->_prepareController (
                             $filename,
                             $controllerPluginId,
                             $request,
@@ -143,29 +158,52 @@ class Dispatcher
                             $routeConfig,
                             $controllerClassName
                         );
-                        return true;
+                        if ($actionFound)  return true;
                     }
                     
-                    // If $pattern euqal '/' and try to match default controller
-                    if ($pattern === '/') {
-                        $controllerClassName = self::DEFAULT_CONTROLLER;
-                        $filename = $config['Path'] . $routeConfig['Path'] . '/' . self::DEFAULT_CONTROLLER . '.php';
-                        if (is_file($filename)) {
-                            $this->_prepareController (
-                                $filename,
-                                $controllerPluginId,
-                                $request,
-                                $fixUri,
-                                $routeConfig,
-                                $controllerClassName
-                            );
-                            return true;
-                        }
+                    // try to match default controller
+                    $controllerClassName = self::DEFAULT_CONTROLLER;
+                    $filename = $config['Path'] . $routeConfig['Path'] . '/' . $controllerClassName . '.php';
+                    if (is_file($filename)) {
+                        $actionFound = $this->_prepareController (
+                            $filename,
+                            $controllerPluginId,
+                            $request,
+                            $fixUri,
+                            $routeConfig,
+                            $controllerClassName
+                        );
+                        if ($actionFound)  return true;
                     }
                 }
             }
         }
-        throw new \Exception(sprintf('Route fail, controller not found. (URI=%s)', $uri));
+
+        // try to dispatch default error controller
+        foreach ($controllerExtensions as $controllerPluginId => &$eachControllerList) {
+            foreach ($eachControllerList as $pattern => &$routeConfig) {
+                $controllerClassName = self::DEFAULT_ERROR_CONTROLLER;
+                $filename = $config['Path'] . $routeConfig['Path'] . '/' . $controllerClassName . '.php';
+                // find controller php file
+                if (is_file($filename)) {
+                    $actionFound = $this->_prepareController (
+                        $filename,
+                        $controllerPluginId,
+                        $request,
+                        '',
+                        $routeConfig,
+                        $controllerClassName
+                    );
+                    if ($actionFound)  return true;
+                }
+            }
+        }
+
+        if (!$actionFound) {
+            throw new Http_Exception('Route Fail: ' . $uri . ', Action Not Found: (Controller=' . get_class($this->_controller) . ')', 404);
+        } else {
+            throw new Http_Exception(sprintf('Route fail, controller not found. (URI=%s)', $uri), 404);
+        }
     }
     
     public function preDispatch (Http_Request &$request, Http_Response &$response)
@@ -228,7 +266,7 @@ class Dispatcher
      * @param string $controllerClassName
      * @throws \Exception
      */
-    private function _prepareController (&$filename, &$pluginId, Http_Request &$request, &$uri, array &$routeConfig, &$controllerClassName)
+    private function _prepareController (&$filename, &$pluginId, Http_Request &$request, $uri, array &$routeConfig, &$controllerClassName)
     {
         //start plugin
         $this->_runtime->start($pluginId);
@@ -267,9 +305,7 @@ class Dispatcher
         }
         
         // route action
-        if (!$this->_router->route($this->_controller, $request, $uri)) {
-            throw new Http_Exception('Route Fail: ' . $uri . ', Action Not Found: (Controller=' . get_class($this->_controller) . ')', 404);
-        }
+        return $this->_router->route($this->_controller, $request, $uri);
     }
     
     /**
