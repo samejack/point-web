@@ -49,6 +49,8 @@ class Http_Response
 
     private $_responseRawBody;
 
+    private $_statusCode = 200;
+
     public function __construct ()
     {
         $this->reset();
@@ -110,12 +112,12 @@ class Http_Response
         }
     }
     
-    public function getResponseRawBoby()
+    public function getResponseRawBody()
     {
         return $this->_responseRawBody;
     }
 
-    public function setResponseRawBoby(&$raw)
+    public function setResponseRawBody(&$raw)
     {
         $this->_responseRawBody = $raw;
     }
@@ -140,13 +142,13 @@ class Http_Response
         if (defined('self::HTTP_STATUS_CODE_MSG_' . $statusCode)) {
             $message = constant('self::HTTP_STATUS_CODE_MSG_' . $statusCode);
         } else if ($statusCode < 200) {
-            $message = 'Informational responses';
+            $message = 'Informational Responses';
         } else if ($statusCode < 300) {
             $message = 'Success';
         } else if ($statusCode < 400) {
             $message = 'Redirection';
         } else {
-            $message = 'Server error';
+            $message = 'Server Error';
         }
         $this->_headers['HTTP'] = sprintf(
             '%s %d %s',
@@ -154,6 +156,12 @@ class Http_Response
             $statusCode,
             $message
         );
+        $this->_statusCode = $statusCode;
+    }
+
+    public function getStatusCode()
+    {
+        return $this->_statusCode;
     }
 
     public function isCliMode()

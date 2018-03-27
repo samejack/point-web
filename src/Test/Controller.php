@@ -55,10 +55,10 @@ abstract class Test_Controller extends TestCase
 
         $length = ob_get_length();
 
-        $responseBoby = ob_get_clean();
+        $responseBody = ob_get_clean();
 
         $response = $this->_framework->getContext()->getBeanByClassName('\point\web\Http_Response');
-        $response->setResponseRawBoby($responseBoby);
+        $response->setResponseRawBody($responseBody);
 
         return $response;
     }
