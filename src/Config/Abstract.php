@@ -14,10 +14,12 @@ abstract class Config_Abstract implements Config_Interface
 
     protected $_environment = 'production';
 
-    public function __construct($properties=null)
+    public function __construct($properties = null)
     {
         if (getenv('ENVIRONMENT') !== false) {
             $this->_environment = getenv('ENVIRONMENT');
+        } else if (defined('ENVIRONMENT')) {
+            $this->_environment = ENVIRONMENT;
         }
         if (is_array($properties)) {
             $this->_properties = $properties;
@@ -30,7 +32,7 @@ abstract class Config_Abstract implements Config_Interface
      * @param string $environment
      * @return void
      */
-    public function setEnvironment ($environment)
+    public function setEnvironment($environment)
     {
         $this->_environment = $environment;
     }
@@ -40,7 +42,7 @@ abstract class Config_Abstract implements Config_Interface
      *
      * @return string
      */
-    public function getEnvironment ()
+    public function getEnvironment()
     {
         return $this->_environment;
     }
