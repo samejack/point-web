@@ -42,13 +42,17 @@ class Utility_Date
      *  Format = 'Y-m-d H:i:s'
      * @return string 時間字串
      */
-    public function getTimezoneDateTime($timezone = null, $date = null)
+    public function getTimezoneDateTime($timezone = null, $date = null, $fixString = '')
     {
         if (is_null($timezone)) {
             $timezone = $this->getDefaultTimeZone();
         }
         if (is_null($date)) {
-            $date = date('Y-m-d H:i:s');
+            if ($fixString !== '') {
+                $date = date('Y-m-d H:i:s', strtotime($date . $fixString));
+            } else {
+                $date = date('Y-m-d H:i:s');
+            }
         }
         if ($timezone === date_default_timezone_get()) {
             return $date;
