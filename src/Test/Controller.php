@@ -58,7 +58,7 @@ abstract class Test_Controller extends TestCase
         $responseBody = ob_get_clean();
 
         $response = $this->_framework->getContext()->getBeanByClassName('\point\web\Http_Response');
-        $response->setResponseRawBody($responseBody);
+        $response->setRawBody($responseBody);
 
         return $response;
     }

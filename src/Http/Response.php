@@ -112,12 +112,12 @@ class Http_Response
         }
     }
     
-    public function getResponseRawBody()
+    public function getRawBody()
     {
         return $this->_responseRawBody;
     }
 
-    public function setResponseRawBody(&$raw)
+    public function setRawBody(&$raw)
     {
         $this->_responseRawBody = $raw;
     }
