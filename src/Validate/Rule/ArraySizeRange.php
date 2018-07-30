@@ -7,7 +7,7 @@ namespace point\web;
  * 
  * @author sj
  */
-class Validate_Rule_ArraySizeRange extends Validate_Base
+class Validate_Rule_ArraySizeRange extends Validate_Base implements Validate_ArrayRule
 {
     /**
      * 驗證陣列元素數量
@@ -24,7 +24,7 @@ class Validate_Rule_ArraySizeRange extends Validate_Base
         parent::__construct($args, $message);
     }
 
-    public function validate($input)
+    public function validate($input, array &$columns)
     {
         $min = $this->_args['min'];
         $max = $this->_args['max'];

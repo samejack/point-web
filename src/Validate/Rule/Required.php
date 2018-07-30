@@ -22,6 +22,13 @@ class Validate_Rule_Required extends Validate_Base
 
     public function validate($input, array &$columns)
     {
-        return (isset($input) && strlen(chop($input)) > 0);
+        if (!isset($input)) {
+            return false;
+        }
+        if (is_array($input)) {
+            return !is_null($input) && count($input) > 0;
+        } else {
+            return strlen(chop($input)) > 0;
+        }
     }
 }

@@ -50,7 +50,7 @@ class Validate_Validator
         // optional
         foreach ($rules as &$rule) {
             if ($rule instanceof Validate_Rule_Optional) {
-                // 如果非必填的話，沒有傳入值不需要驗證
+                // 如果「非必填」的話，沒有傳入值不需要驗證
                 if (!isset($columns[$id]) || empty($columns[$id])) {
                     return true;
                 }
@@ -61,7 +61,7 @@ class Validate_Validator
         foreach ($rules as &$rule) {
             //check rule exist
             if (!($rule instanceof Validate_Interface)) {
-                throw new \Exception(get_class($rule) . ' not instanceof Validate_Interface.');
+                throw new \Exception(get_class($rule) . ' not instance of Validate_Interface.');
             }
 
             $result &= $this->_runRule($columns, $id, $rule);
@@ -87,7 +87,12 @@ class Validate_Validator
         if (isset($columns[$id])) {
             $columnValue = $columns[$id];
         }
-        $result = $this->_nestValidate($rule, $columnValue, $columns);
+
+        if ($rule instanceof Validate_ArrayRule) {
+            $result = $rule->validate($columnValue, $columns);
+        } else {
+            $result = $this->_nestValidate($rule, $columnValue, $columns);
+        }
         if (!$result) {
             $this->_messages[] = array(
                 'id' => $id ,
