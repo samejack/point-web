@@ -28,7 +28,9 @@ class Viewer_FileDownload implements Viewer_Interface
      * @param string $filePath File path
      * @param string $fileName File name
      */
-    public function setOutputFilepath ($filePath, $fileName = null) {
+    public function setOutputFilepath ($filePath, $fileName = null)
+    {
+        if (strpos($filePath, '..') !== false) die('File path has security issue. (\'..\' found)');
         $this->_filepath = $filePath;
         $this->_content = null;
         if (is_null($fileName)) {
@@ -103,7 +105,7 @@ class Viewer_FileDownload implements Viewer_Interface
             case 'jpg' :
             case 'jpeg' :
             case 'jpe' :
-                return 'image/jpg';
+                return 'image/jpeg';
             case 'png' :
             case 'gif' :
             case 'bmp' :
