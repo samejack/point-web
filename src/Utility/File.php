@@ -9,14 +9,18 @@ namespace point\web;
  */
 class Utility_File
 {
-    public static function isImage($filePath)
+    public static function isImage($filePath, $checkExtension = true)
     {
         if (file_exists($filePath)) {
-            if (($info = @getimagesize($filePath))
-            return false;
+            $info = @getimagesize($filePath);
+            if (!$info)  return false;
 
-            $ext = image_type_to_extension($info['2']);
-            return preg_match('/^.+\.((jpg|jpeg|gif|bmp|png))$/', $ext) === 1;
+            if (!$checkExtension) {
+                return true;
+            } else {
+                $ext = image_type_to_extension($info['2']);
+                return preg_match('/^.+\.((jpg|jpeg|gif|bmp|png))$/', $ext) === 1;
+            }
         } else {
             return false;
         }
