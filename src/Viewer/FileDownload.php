@@ -64,24 +64,25 @@ class Viewer_FileDownload implements Viewer_Interface
             $mimetype = self::getMineType($this->_filepath);
         }
         //Set Http Herder
-        Header('Content-Description: File Transfer');
-        Header('Content-type: ' . $mimetype);
+        $response->addHeader('Content-Description', 'File Transfer');
+        $response->addHeader('Content-type', $mimetype);
             
-        if (substr_count(strtolower($_SERVER['HTTP_USER_AGENT']), 'ie') > 0) {
-            Header('Content-Disposition: attachment; filename='. rawurlencode($this->_filename));
+        if (substr_count(strtolower($request->getServerParam('HTTP_USER_AGENT')), 'ie') > 0) {
+            $response->addHeader('Content-Disposition', 'attachment; filename='. rawurlencode($this->_filename));
         } else {
-            Header('Content-Disposition: attachment; filename='. $this->_filename);
+            $response->addHeader('Content-Disposition', 'attachment; filename='. $this->_filename);
         }
-            
-        Header('Content-Transfer-Encoding: binary');
-        Header('Expires: 0');
-        Header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        Header('Pragma: public');
+        
+        $response->addHeader('Content-Transfer-Encoding', 'binary');
+        $response->addHeader('Expires', '0');
+        $response->addHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
+        $response->addHeader('Pragma', 'public');
         if (is_null($this->_filepath)) {
-            Header('Content-Length: ' . strlen($this->_content));
+            $response->addHeader('Content-Length', strlen($this->_content));
             $response->output($this->_content);
         } else {
-            Header('Content-Length: ' . filesize($this->_filepath));
+            $response->addHeader('Content-Length', filesize($this->_filepath));
+            $response->sendHeaders();
             $fp = fopen($this->_filepath, 'r');
             while (!feof($fp)) {
                 echo fgets($fp);
