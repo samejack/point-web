@@ -3,7 +3,7 @@
 namespace point\web;
 
 /**
- * 字串相關常用副程式
+ * 檔案相關常用副程式
  *
  * @author sj
  */
