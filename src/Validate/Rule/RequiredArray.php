@@ -3,11 +3,11 @@
 namespace point\web;
 
 /**
- * 驗證必須不為空
+ * 驗證陣列
  * 
  * @author sj
  */
-class Validate_Rule_Required extends Validate_Base
+class Validate_Rule_Required extends Validate_Base implements Validate_ArrayRule
 {
     /**
      * 驗證必須不為空
@@ -22,13 +22,6 @@ class Validate_Rule_Required extends Validate_Base
 
     public function validate($input, array &$columns)
     {
-        if (!isset($input)) {
-            return false;
-        }
-        if (is_array($input)) {
-            return !is_null($input) && count($input) > 0;
-        } else {
-            return strlen(chop($input)) > 0;
-        }
+        return is_array($input);
     }
 }
