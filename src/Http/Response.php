@@ -51,6 +51,8 @@ class Http_Response
 
     private $_statusCode = 200;
 
+    private $_emptyReturn = false;
+
     public function __construct ()
     {
         $this->reset();
@@ -103,11 +105,16 @@ class Http_Response
             $this->_headers[$name] = $name . ': ' . $value;
         }
     }
-    
+   
+    public function setEmptyReturn($enabled)
+    {
+        $this->_emptyReturn = (boolean)$enabled;
+    }
+ 
     public function output($data = null)
     {
         $this->sendHeaders();
-        if (!is_null($data)) {
+        if (!is_null($data) && !$this->_emptyReturn) {
             echo $data;
         }
     }
