@@ -27,12 +27,12 @@ class Validate_Rule_IntRangeEqualerThan extends Validate_Base
     public function validate($input, array &$columns)
     {
         //check agrs
-        if (!isset($this->_args['min']) || !isset($this->args['max'])) {
+        if (!isset($this->_args['min']) || !isset($this->_args['max'])) {
             return false;
         }
 
         $min = $this->_args['min'];
         $max = $this->_args['max'];
-        return ($input >= $min && $input <= $max);
+        return ((int)$input >= $min && (int)$input <= $max);
     }
 }
