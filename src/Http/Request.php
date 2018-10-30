@@ -42,6 +42,8 @@ class Http_Request
      */
     private $_ipAddress = null;
 
+    private $_requestId = null;
+
     public function __construct(
         array $params = null,
         array $headers = null,
@@ -84,6 +86,15 @@ class Http_Request
         }
 
         $this->_ipAddress = null;
+
+        if (is_null($this->_requestId)) {
+            $httpRequestId = $this->getServerParam('HTTP_X_REQUEST_ID');
+            if (!is_null($httpRequestId)) {
+                $this->_requestId = $httpRequestId;
+            } else {
+                $this->_requestId = Utility_String::generateURLSafeRand(20);
+            }
+        }
     }
 
     public function getHttpMethod()
@@ -149,6 +160,16 @@ class Http_Request
             }
         }
         return $this->_ipAddress;
+    }
+
+    public function getRequestId()
+    {
+        return $this->_requestId;
+    }
+
+    public function setRequestId($requestId)
+    {
+        $this->_requestId = $requestId;
     }
 
     public function getProtocol()
