@@ -1,4 +1,5 @@
 <?php
+
 namespace point\web;
 
 class Http_Request 
