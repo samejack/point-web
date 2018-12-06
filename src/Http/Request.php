@@ -184,6 +184,17 @@ class Http_Request
         return 'http';
     }
 
+    public function getHostname()
+    {
+        $serverParams = $this->getServerParams();
+        foreach (array('HTTP_HOST', 'SERVER_NAME') as $header) {
+            if (isset($serverParams[$header])) {
+                return $serverParams[$header];
+            }
+        }
+        return null;
+    }
+
     public function setUri($uri)
     {
         $queryString = parse_url($uri, PHP_URL_QUERY);
