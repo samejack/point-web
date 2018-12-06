@@ -9,7 +9,9 @@ class Viewer_Image implements Viewer_Interface
     private $_content = null;
     
     private $_filename = null;
-    
+ 
+    private $_cache = true;
+   
     public function setModel($key, $model)
     {
     }
@@ -28,7 +30,7 @@ class Viewer_Image implements Viewer_Interface
      * @param string $filePath File path
      * @param string $fileName File name
      */
-    public function setOutputFilepath ($filePath, $fileName = null)
+    public function setOutputFilepath ($filePath, $fileName = null, $cache = true)
     {
         if (strpos($filePath, '..') !== false) die('File path has security issue. (\'..\' found)');
         $this->_filepath = $filePath;
@@ -38,6 +40,8 @@ class Viewer_Image implements Viewer_Interface
         } else {
             $this->_filename = basename($fileName);
         }
+
+        $this->_cache = $cache;
     }
     
     public function render(Http_Request &$request, Http_Response &$response)
@@ -54,12 +58,15 @@ class Viewer_Image implements Viewer_Interface
             return;
         }
 
+        clearstatcache();
         $lastModified = gmdate('D, d M Y H:i:s', intval(filemtime($this->_filepath))) . ' GMT+0800';
         $etag = fileinode($this->_filepath);
 
         $server = $request->getServerParams();
-        if ((isset($server['HTTP_IF_MODIFIED_SINCE']) && $server['HTTP_IF_MODIFIED_SINCE'] === $lastModified)
-            || (isset($server['HTTP_IF_NONE_MATCH']) && $server['HTTP_IF_NONE_MATCH'] === $etag)
+        if ($this->_cache
+            && ((isset($server['HTTP_IF_MODIFIED_SINCE']) && $server['HTTP_IF_MODIFIED_SINCE'] === $lastModified)
+                || (isset($server['HTTP_IF_NONE_MATCH']) && $server['HTTP_IF_NONE_MATCH'] === $etag)
+            )
         ) {
             $response->setStatusCode(304);
             $response->sendHeaders();
