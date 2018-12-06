@@ -7,7 +7,7 @@ namespace point\web;
  * 
  * @author sj
  */
-class Validate_Rule_Required extends Validate_Base implements Validate_ArrayRule
+class Validate_Rule_RequiredArray extends Validate_Base implements Validate_ArrayRule
 {
     /**
      * 驗證必須不為空
