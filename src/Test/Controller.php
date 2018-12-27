@@ -16,7 +16,6 @@ abstract class Test_Controller extends TestCase
 
     public function __construct($config = null)
     {
-        parent::__construct();
 
         $context = new Context($config);
         $context->addConfiguration(
@@ -30,6 +29,9 @@ abstract class Test_Controller extends TestCase
         $this->_framework = $context->getBeanByClassName('point\core\Framework');
         $this->_framework->prepare();
         $this->_framework->getRuntime()->resolve('point.web');
+        $this->_framework->getRuntime()->setCurrentPluginId('point.web');
+
+        parent::__construct();
     }
 
     protected function setUp()
