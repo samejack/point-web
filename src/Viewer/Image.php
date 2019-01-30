@@ -80,7 +80,7 @@ class Viewer_Image implements Viewer_Interface
         if (is_null($this->_filepath)) {
             $mimetype = 'application/octet-stream';
         } else {
-            $mimetype = self::getMineType($this->_filename);
+            $mimetype = self::getMineType($this->_filepath);
         }
         //Set Http Herder
         Header('Content-type: ' . $mimetype);
@@ -97,9 +97,10 @@ class Viewer_Image implements Viewer_Interface
         exit(0);
     }
     
-    public static function getMineType($filename)
+    public static function getMineType($filepath)
     {
-         
+        
+        $filename = basename($filepath); 
         preg_match("|\\.([a-z0-9]{2,4})$|i", $filename, $fileSuffix);
     
         switch(strtolower($fileSuffix[1])) {
@@ -171,7 +172,7 @@ class Viewer_Image implements Viewer_Interface
                 return 'application/x-shockwave-flash';
             default :
                 if (function_exists('mime_content_type')) {
-                    return mime_content_type($filename);
+                    return mime_content_type($filepath);
                 }
                 return 'application/octet-stream';
         }
