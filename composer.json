@@ -1,7 +1,7 @@
 {
   "name": "samejack/point-web",
   "description": "PHP Web Application Framework",
-  "keywords": ["framework", "point-core", "point-web", "php", "IoC/DI"],
+  "keywords": ["framework", "point-core", "point-web", "php", "Inversion of Control", "Dependency Injection"],
   "license": "Apache-2.0",
   "type": "library",
   "authors": [
