@@ -11,7 +11,9 @@ class Viewer_Image implements Viewer_Interface
     private $_filename = null;
  
     private $_cache = true;
-   
+
+    private $_cacheTime = 86400;
+
     public function setModel($key, $model)
     {
     }
@@ -59,7 +61,8 @@ class Viewer_Image implements Viewer_Interface
         }
 
         clearstatcache();
-        $lastModified = gmdate('D, d M Y H:i:s', intval(filemtime($this->_filepath))) . ' GMT+0800';
+        $filemtime = intval(filemtime($this->_filepath));
+        $lastModified = gmdate('D, d M Y H:i:s', $filemtime) . ' GMT';
         $etag = fileinode($this->_filepath);
 
         $server = $request->getServerParams();
@@ -73,6 +76,20 @@ class Viewer_Image implements Viewer_Interface
             return;
         }
 
+        if (!$this->_cache) {
+            $response->addHeader('Cache-Control', 'max-age=0');
+            $response->addHeader(
+                'Expires',
+                gmdate('D, d M Y H:i:s', time()) . ' GMT'
+            );
+        } else {
+            $response->addHeader('Cache-Control', 'max-age=' . $this->_cacheTime);
+            $response->addHeader(
+                'Expires',
+                gmdate('D, d M Y H:i:s', time() + $this->_cacheTime) . ' GMT'
+            );
+        }
+
         $response->addHeader('ETag', '"' . md5($etag) . '"');
         $response->addHeader('Last-Modified', $lastModified);
 
@@ -84,9 +101,6 @@ class Viewer_Image implements Viewer_Interface
         }
         //Set Http Herder
         $response->addHeader('Content-type', $mimetype);
-        $response->addHeader('Expires', 0);
-        $response->addHeader('Cache-Control', 'max-age=0');
-        $response->addHeader('Pragma', 'private');
         $response->addHeader('Content-Length', filesize($this->_filepath));
         $response->addHeader('Content-Encoding', 'none');
 
