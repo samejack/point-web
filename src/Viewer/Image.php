@@ -73,8 +73,8 @@ class Viewer_Image implements Viewer_Interface
             return;
         }
 
-        Header('ETag: "' . md5($etag) . '"');
-        Header('Last-Modified: ' . $lastModified);
+        $response->addHeader('ETag', '"' . md5($etag) . '"');
+        $response->addHeader('Last-Modified', $lastModified);
 
         //load file
         if (is_null($this->_filepath)) {
@@ -83,14 +83,16 @@ class Viewer_Image implements Viewer_Interface
             $mimetype = self::getMineType($this->_filepath);
         }
         //Set Http Herder
-        Header('Content-type: ' . $mimetype);
-        Header('Expires: 0');
-        Header('Cache-Control: max-age=0');
-        Header('Pragma: private');
-        Header('Content-Length: ' . filesize($this->_filepath));
+        $response->addHeader('Content-type', $mimetype);
+        $response->addHeader('Expires', 0);
+        $response->addHeader('Cache-Control', 'max-age=0');
+        $response->addHeader('Pragma', 'private');
+        $response->addHeader('Content-Length', filesize($this->_filepath));
+        $response->addHeader('Content-Encoding', 'none');
+
         $fp = fopen($this->_filepath, 'r');
         while (!feof($fp)) {
-            echo fgets($fp);
+            $response->output(fgets($fp));
         }
         fclose($fp);
     
