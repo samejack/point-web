@@ -63,7 +63,7 @@ class Viewer_Image implements Viewer_Interface
         clearstatcache();
         $filemtime = intval(filemtime($this->_filepath));
         $lastModified = gmdate('D, d M Y H:i:s', $filemtime) . ' GMT';
-        $etag = fileinode($this->_filepath);
+        $etag = '"' . md5(fileinode($this->_filepath)) . '"';
 
         $server = $request->getServerParams();
         if ($this->_cache
@@ -77,7 +77,7 @@ class Viewer_Image implements Viewer_Interface
         }
 
         if (!$this->_cache) {
-            $response->addHeader('Cache-Control', 'max-age=0');
+            $response->addHeader('Cache-Control', 'no-cache');
             $response->addHeader(
                 'Expires',
                 gmdate('D, d M Y H:i:s', time()) . ' GMT'
@@ -90,7 +90,7 @@ class Viewer_Image implements Viewer_Interface
             );
         }
 
-        $response->addHeader('ETag', '"' . md5($etag) . '"');
+        $response->addHeader('ETag', $etag);
         $response->addHeader('Last-Modified', $lastModified);
 
         //load file
@@ -102,7 +102,6 @@ class Viewer_Image implements Viewer_Interface
         //Set Http Herder
         $response->addHeader('Content-type', $mimetype);
         $response->addHeader('Content-Length', filesize($this->_filepath));
-        $response->addHeader('Content-Encoding', 'none');
 
         $fp = fopen($this->_filepath, 'r');
         while (!feof($fp)) {
@@ -203,3 +202,4 @@ class Viewer_Image implements Viewer_Interface
         $response->output($exception->getMessage());
     }
 }
+
