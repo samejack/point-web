@@ -22,7 +22,7 @@ class Handler_ExceptionViewer
      */
     private $_dispatcher;
 
-    public function exceptionHandler(\Exception &$exception)
+    public function exceptionHandler(&$exception)
     {
         $viewer = $this->_dispatcher->getViewer();
         if (!is_null($viewer) && $viewer instanceof Viewer_Interface) {
