@@ -176,7 +176,7 @@ class Viewer_FileDownload implements Viewer_Interface
     public function errorHandler(
         Http_Request &$request,
         Http_Response &$response,
-        \Exception &$exception
+        &$exception
     ) {
         $response->setStatusCode($exception->getCode());
         $response->output($exception->getMessage());
