@@ -20,6 +20,6 @@ interface Viewer_Interface
     public function errorHandler(
         Http_Request &$request,
         Http_Response &$response,
-        \Exception &$exception
+        &$exception
     );
 }
