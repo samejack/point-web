@@ -12,7 +12,7 @@ class Viewer_Image implements Viewer_Interface
  
     private $_cache = true;
 
-    private $_cacheTime = 86400;
+    private $_cacheTime = 3600;
 
     public function setModel($key, $model)
     {
@@ -65,41 +65,32 @@ class Viewer_Image implements Viewer_Interface
         $lastModified = gmdate('D, d M Y H:i:s', $filemtime) . ' GMT';
         $etag = '"' . md5(fileinode($this->_filepath)) . '"';
 
-        $server = $request->getServerParams();
-        if ($this->_cache
-            && ((isset($server['HTTP_IF_MODIFIED_SINCE']) && $server['HTTP_IF_MODIFIED_SINCE'] === $lastModified)
-                || (isset($server['HTTP_IF_NONE_MATCH']) && $server['HTTP_IF_NONE_MATCH'] === $etag)
-            )
-        ) {
-            $response->setStatusCode(304);
-            $response->sendHeaders();
-            return;
-        }
 
-        if (!$this->_cache) {
-            $response->addHeader('Cache-Control', 'no-cache');
-            $response->addHeader(
-                'Expires',
-                gmdate('D, d M Y H:i:s', time()) . ' GMT'
-            );
-        } else {
+
+        if ($this->_cache) {
+            // HTTP 304
+            $server = $request->getServerParams();
+            if ((isset($server['HTTP_IF_MODIFIED_SINCE']) && $server['HTTP_IF_MODIFIED_SINCE'] === $lastModified)
+                || (isset($server['HTTP_IF_NONE_MATCH']) && $server['HTTP_IF_NONE_MATCH'] === $etag)
+            ) {
+                $response->setStatusCode(304);
+                $response->sendHeaders();
+                return;
+            }
+
+            $response->addHeader('ETag', $etag);
+            $response->addHeader('Last-Modified', $lastModified);
             $response->addHeader('Cache-Control', 'max-age=' . $this->_cacheTime);
             $response->addHeader(
                 'Expires',
                 gmdate('D, d M Y H:i:s', time() + $this->_cacheTime) . ' GMT'
             );
-        }
-
-        $response->addHeader('ETag', $etag);
-        $response->addHeader('Last-Modified', $lastModified);
-
-        //load file
-        if (is_null($this->_filepath)) {
-            $mimetype = 'application/octet-stream';
         } else {
-            $mimetype = self::getMineType($this->_filepath);
+            $response->addHeader('Cache-Control', 'no-store');
         }
+
         //Set Http Herder
+        $mimetype = Utility_MimeType::getMineType($this->_filepath);
         $response->addHeader('Content-type', $mimetype);
         $response->addHeader('Content-Length', filesize($this->_filepath));
 
@@ -114,7 +105,8 @@ class Viewer_Image implements Viewer_Interface
     
     public static function getMineType($filepath)
     {
-        
+        if (is_null($filepath)) return 'application/octet-stream';
+
         $filename = basename($filepath); 
         preg_match("|\\.([a-z0-9]{2,4})$|i", $filename, $fileSuffix);
     
