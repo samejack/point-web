@@ -118,7 +118,7 @@ class Http_Request
         return null;
     }
     
-    public function setParam($key, $value)
+    public function setParam($key, $value = null)
     {
         $this->_params[$key] = $value;
     }
