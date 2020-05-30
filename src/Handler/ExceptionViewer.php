@@ -24,17 +24,13 @@ class Handler_ExceptionViewer
 
     public function exceptionHandler(&$exception)
     {
+        // 呼叫 viewer 自行實作的 error render
         $viewer = $this->_dispatcher->getViewer();
         if (!is_null($viewer) && $viewer instanceof Viewer_Interface) {
             if ($viewer->errorHandler($this->_request, $this->_response, $exception) === true) {
                 return true;
             }
         }
-
-        // TODO 呼叫 viewer 自行實作的 error render (sample!)
-        $this->_response->setStatusCode(500);
-        $this->_response->output($exception);
-
-        return true;
+        return false;
     }
 }
