@@ -21,6 +21,11 @@ class Session_Plugin implements Session_Interface
 
     public function start(array $options = null)
     {
+
+        if (session_id() || headers_sent()) {
+            return;
+        }
+
         // set session file path
         if (isset($this->_config['session']['path'])) {
             session_save_path($this->_config['session']['path']);
