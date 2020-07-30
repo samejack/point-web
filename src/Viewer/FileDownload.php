@@ -51,6 +51,7 @@ class Viewer_FileDownload implements Viewer_Interface
         if (is_null($fileName)) {
             $this->_filename = date('Y-m-d_His') . '.download';
         } else {
+            setlocale(LC_ALL, 'C.UTF-8');
             $this->_filename = basename($fileName);
         }
     }
