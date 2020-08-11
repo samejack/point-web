@@ -28,7 +28,7 @@ class Session_Plugin implements Session_Interface
 
         // set session file path
         if (isset($this->_config['session']['path'])) {
-            session_save_path($this->_config['session']['path']);
+            session_save_path($this->_config['session']['save_path']);
         }
 
         // set session timeout
@@ -53,12 +53,34 @@ class Session_Plugin implements Session_Interface
             }
         }
 
+        if (preg_match('/^7\.3.*$/', phpversion()) !== 0) {
+            setcookie(
+                $this->_config['session']['name'],
+                session_id(),
+                [
+                    'lifetime' => $this->_config['session']['lifetime'],
+                    'domain' => $this->_config['session']['domain'],
+                    'secure' => $this->_config['session']['secure'],
+                    'httponly' => $this->_config['session']['httponly'],
+                    'samesite' => $this->_config['session']['samesite']
+                ]
+            );
+        } else {
+            $path = $this->_config['session']['path'];
+            session_set_cookie_params(
+                $this->_config['session']['lifetime'],
+                is_null($path) ? null : $path . '; SameSite=' . $this->_config['session']['samesite'],
+                $this->_config['session']['domain'],
+                $this->_config['session']['secure'],
+                $this->_config['session']['httponly']
+            );
+        }
+
         if (is_null($options)) {
             @session_start();
         } else {
-            @session_start($this->_options);
+            @session_start($options);
         }
-
     }
 
     public function setExpire($expire)
@@ -68,8 +90,6 @@ class Session_Plugin implements Session_Interface
         session_cache_expire($expire);
 
         if (session_status() === PHP_SESSION_NONE)  $this->start();
-
-        setcookie($this->_config['session']['name'], session_id(), time() + $expire);
     }
 
     public function clear($pluginId = null)
