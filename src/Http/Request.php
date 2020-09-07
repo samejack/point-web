@@ -10,6 +10,11 @@ class Http_Request
      */
     private $_params = null;
     /**
+     * Cookies of request
+     * @var array
+     */
+    private $_cookies = null;
+    /**
      * auto marshal model 
      * @var array
      */
@@ -58,7 +63,8 @@ class Http_Request
         array $params = null,
         array $headers = null,
         $uri = null,
-        $httpMethod = null
+        $httpMethod = null,
+        array $cookies = null
     ) {
         if (!is_null($params) && is_array($params)) {
             $this->_params = $params;
@@ -67,7 +73,13 @@ class Http_Request
         } else {
             $this->_params = array();
         }
-
+        if (!is_null($cookies) && is_array($cookies)) {
+            $this->_cookies = $cookies;
+        } else if (isset($_COOKIE) && count($_COOKIE) > 0) {
+            $this->_cookies = $_COOKIE;
+        } else {
+            $this->_cookies = array();
+        }
         if (is_null($headers) && function_exists('getallheaders')) {
             $this->_headers = getallheaders();
         } else if (is_array($headers)) {
@@ -137,7 +149,17 @@ class Http_Request
     {
         return $this->_params;
     }
-    
+
+    public function getCookie($key = null)
+    {
+        if (is_null($key)) {
+            return $this->_cookies;
+        } else if (isset($this->_cookies[$key])) {
+            return $this->_cookies[$key];
+        }
+        return null;
+    }
+
     public function getUri()
     {
         return $this->_uri;

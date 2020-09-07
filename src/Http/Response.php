@@ -143,7 +143,59 @@ class Http_Response
             $this->_headers = array();
         }
     }
- 
+
+    public function setCookie(
+        $name,
+        $value,
+        $lifetime = 0,
+        $samesite = 'None',
+        $path = '/',
+        $domain = null,
+        $secure = true,
+        $httponly = true
+    ) {
+        if ($lifetime === 0) {
+            $expires = '';
+        } else {
+            $expires = time() + $lifetime;
+        }
+        $cookirHeader = rawurlencode($name) . '=' . rawurlencode($value)
+            . (empty($expires) ? '' : '; expires=' . gmdate('D, d-M-Y H:i:s', $expires) . ' GMT')
+            . (empty($path) ? '' : '; path=' . $path)
+            . (empty($samesite) ? '' : '; SameSite=' . $samesite)
+            . (empty($domain) ? '' : '; domain=' . $domain)
+            . (!$secure ? '' : '; secure')
+            . (!$httponly ? '' : '; HttpOnly');
+
+        $this->addHeader('Set-Cookie', $cookirHeader);
+
+        //point-sid=akqfk6s5rd1r3oacsum9n7jfsp; expires=Wed, 04-Nov-2020 16:18:27 GMT; Max-Age=5184000; path=/; SameSite=None; secure; HttpOnly
+        if (preg_match('/^7\.3.*$/', phpversion()) !== 0) {
+            setcookie(
+                $name,
+                $value,
+                [
+                    'lifetime' => $lifetime,
+                    'domain' => $domain,
+                    'secure' => $secure,
+                    'httponly' => $httponly,
+                    'samesite' => $samesite
+                ]
+            );
+        } else {
+            $path = $this->_config['session']['path'];
+            setcookie(
+                $name,
+                $value,
+                $lifetime,
+                is_null($path) ? null : $path . '; SameSite=' . $samesite,
+                $domain,
+                $secure,
+                $httponly
+            );
+        }
+    }
+
     public function setStatusCode($statusCode)
     {
         if (defined('self::HTTP_STATUS_CODE_MSG_' . $statusCode)) {
