@@ -150,6 +150,11 @@ class Http_Request
         return $this->_params;
     }
 
+    public function setParams($params)
+    {
+        $this->_params = $params;
+    }
+
     public function getCookie($key = null)
     {
         if (is_null($key)) {
