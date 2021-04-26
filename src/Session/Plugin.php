@@ -19,13 +19,18 @@ class Session_Plugin implements Session_Interface
      */
     private $_runtime;
 
-    public function start(array $options = null)
+    public function start(array $options = null, $sessionId = null)
     {
 
         if (session_id() || headers_sent()) {
             return;
         }
 
+        // customize session id
+        if (!is_null($sessionId) && !empty($sessionId)) {
+            session_id($sessionId);
+        }
+        
         // set session file path
         if (isset($this->_config['session']['path'])) {
             session_save_path($this->_config['session']['save_path']);
