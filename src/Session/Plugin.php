@@ -76,7 +76,7 @@ class Session_Plugin implements Session_Interface
             $sameSite = is_null($path) ? null : $path . '; SameSite=' . $this->_config['session']['samesite'];
 
             // iPhone 如果送出 SameSite=None 會變成 Strict
-            $headers = getallheaders();
+            $headers = function_exists('getallheaders') ? getallheaders() : [];
             if ($sameSite === 'None' && strpos($headers['User-Agent'], 'iPhone OS 12') !== false) {
                 $sameSite = null;
             }
