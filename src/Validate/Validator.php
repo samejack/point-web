@@ -45,7 +45,7 @@ class Validate_Validator
      * @throws \Exception
      * @return boolean
      */
-    private function _runRules (array &$columns, $id, array &$rules, $ruleBreak=true)
+    private function _runRules(array &$columns, $id, array &$rules, $ruleBreak=true)
     {
         // optional
         foreach ($rules as &$rule) {
@@ -80,7 +80,7 @@ class Validate_Validator
      * @param Validate_Interface $rule
      * @return boolean
      */
-    private function _runRule (array &$columns, $id, Validate_Interface &$rule)
+    private function _runRule(array &$columns, $id, Validate_Interface &$rule)
     {
         // process array columns
         $columnValue = '';
@@ -115,19 +115,6 @@ class Validate_Validator
         } else {
             return $rule->validate($columnValue, $columns);
         }
-    }
-
-    private function _convertValue (array $args, array $columns)
-    {
-        $key = array_pop(array_keys($args));
-        $value = array_pop($args);
-        if (!isset($columns[$key])) {
-            return '';
-        }
-        if (is_array($columns[$key])&&is_array($value)) {
-            return $this->_convertValue($value, $columns[$key]);
-        }
-        return $this->checkValues($columns[$key], array($value));
     }
 
 }
