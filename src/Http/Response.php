@@ -53,14 +53,34 @@ class Http_Response
 
     private $_emptyReturn = false;
 
+    /**
+     * Response model
+     * @var array
+     */
+    private $_models = array();
+
     public function __construct ()
     {
         $this->reset();
     }
+  
+    public function setModel($key, $model)
+    {
+        $this->_models[$key] = $model;
+    }
+    
+    public function getModel($key = null)
+    {
+        if (is_null($key)) {
+            return $this->_models;
+        } else if (array_key_exists($key, $this->_models)) {
+            return $this->_models[$key];
+        }
+        return null;
+    }
 
     public function reset()
     {
-
         unset($this->_headers);
         $this->_headers = array();
 
@@ -76,6 +96,9 @@ class Http_Response
 
         unset($this->_responseRawBody);
         $this->_responseRawBody = null;
+
+        unset($this->_models);
+        $this->_models = [];
 
         // default header
         $this->addHeader($this->_protocol . ' 200 ' . self::HTTP_STATUS_CODE_MSG_200);

@@ -173,6 +173,6 @@ class Session_Plugin implements Session_Interface
 
     public function destroy()
     {
-        session_destroy();
+        if (session_status() === PHP_SESSION_ACTIVE)  session_destroy();
     }
 }

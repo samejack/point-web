@@ -38,6 +38,12 @@ class Viewer_Json implements Viewer_Interface
     {
         $response->addHeader('Content-Type', 'application/json');
         if (!is_null($this->_models)) {
+            // try to merge response model
+            $responseModel = $response->getModel();
+            if (!is_null($responseModel) && is_array($responseModel) && count($responseModel) > 0) {
+                $this->_models = array_merge($this->_models, $responseModel);
+            }
+            // output from viewer model
             $outputData = self::marshal($this->_models);
             $response->addHeader('Content-length', strlen($outputData));
             $response->output($outputData);
