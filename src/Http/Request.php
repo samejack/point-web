@@ -51,8 +51,8 @@ class Http_Request
     private $_requestId = null;
 
     public function __construct(
-        array $params = null,
-        array $headers = null,
+        $params = null,
+        $headers = null,
         $uri = null,
         $httpMethod = null
     ) {
@@ -60,11 +60,11 @@ class Http_Request
     }
 
     public function reset(
-        array $params = null,
-        array $headers = null,
+        $params = null,
+        $headers = null,
         $uri = null,
         $httpMethod = null,
-        array $cookies = null
+        $cookies = null
     ) {
         if (!is_null($params) && is_array($params)) {
             $this->_params = $params;
@@ -81,9 +81,15 @@ class Http_Request
             $this->_cookies = array();
         }
         if (is_null($headers) && function_exists('getallheaders')) {
-            $this->_headers = getallheaders();
+            $allHeaders = getallheaders();
+            $this->_headers = [];
+            foreach ($allHeaders as $name => $value) {
+                $this->_headers[strtolower($name)] = $value;
+            }
         } else if (is_array($headers)) {
-            $this->_headers = $headers;
+            foreach ($headers as $name => $value) {
+                $this->_headers[strtolower($name)] = $value;
+            }
         }
 
         if (is_null($uri) && isset($_SERVER['REDIRECT_URL'])) {
@@ -126,6 +132,12 @@ class Http_Request
             return $this->_headers;
         } else if (isset($this->_headers[$key])) {
             return $this->_headers[$key];
+        } else {
+            foreach ($this->_headers as $headerName => $value) {
+                if (strtolower($headerName) === strtolower($key)) {
+                    return $value;
+                }
+            }
         }
         return null;
     }
@@ -135,14 +147,14 @@ class Http_Request
         $this->_params[$key] = $value;
     }
     
-    public function getParam($key = null)
+    public function getParam($key = null, $default = null)
     {
         if (is_null($key)) {
             return $this->_params;
         } else if (isset($this->_params[$key])) {
             return $this->_params[$key];
         }
-        return null;
+        return $default;
     }
 
     public function getParams()
@@ -182,8 +194,9 @@ class Http_Request
                 'REMOTE_ADDR'
             );
             foreach ($conditionHeaders as &$header) {
-                if (isset($serverParams[$header])) {
+                if (isset($serverParams[$header]) && !empty($serverParams[$header])) {
                     $this->_ipAddress = $serverParams[$header];
+                    break;
                 }
             }
         }
@@ -214,8 +227,8 @@ class Http_Request
     public function getHostname()
     {
         $serverParams = $this->getServerParams();
-        foreach (array('HTTP_HOST', 'SERVER_NAME') as $header) {
-            if (isset($serverParams[$header])) {
+        foreach (array('SERVER_NAME', 'HTTP_HOST') as $header) {
+            if (isset($serverParams[$header]) && !empty($serverParams[$header])) {
                 return $serverParams[$header];
             }
         }
@@ -243,19 +256,12 @@ class Http_Request
     private function _makeModel ()
     {
         // auto parse by content type
-        if (array_key_exists('Content-Type', $this->_headers)) {
+        if (array_key_exists('content-type', $this->_headers)) {
             // fix content-type parameter
-            $contentTypeParams = explode(';', $this->_headers['Content-Type']);
+            $contentTypeParams = explode(';', $this->_headers['content-type']);
             // parse
-            switch ($contentTypeParams[0]) {
-                case 'text/json':
-                case 'application/json':
-                case 'application/xjson':
-                    return json_decode($this->getRawBody(), true);
-                    break;
-                default:
-                    return $_REQUEST;
-                    break;
+            if (strpos($contentTypeParams[0], 'json') !== false) {
+                return json_decode($this->getRawBody(), true);
             }
         }
         return $_REQUEST;
